@@ -23,7 +23,10 @@ Specific Requirements:
     - The application should use the following text embedding models:
         - text-embedding-3-small via OpenAI
         - nomic-text-embed via Ollama
-    - When the application processes an data file, it should process the data row by row, or record by record, sending each on to the LLM to return the appropriate structured response according to the data type. That structured response should be stored in the database as well as the Chroma vector database.
+    - When the application processes an data file, it should process the data row by row, or record by record, sending each on to the LLM to return the appropriate structured response according to the data type. That structured response should be stored in the database as well as the Chroma vector database. The menu should have optioins to process each type of data, and when selected, that agent/tool should look in the appropriate folder and process each file in the folder.
+    - Vulnerabiility scans and network scans should be xml files.
+    - PCAP files should be pcap files.
+    - Knowledgebase documents should be in pdf format.
     - The application should use the following UI:
         - CLI
     - The application should use the following validation framework:
