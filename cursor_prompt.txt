@@ -1,0 +1,32 @@
+Please create the following application:
+
+Application name: OT Cybersecurity Assistant
+Coding language: Python
+Agentic framework: PydanticAI
+Validation framework: Pydantic
+API framework: FastAPI
+UI Type: CLI
+LLM Model: gpt-4o and Llama3.1:8b via Ollama
+Database (if needed): MongoDB
+Vector Database (if needed): Chroma
+
+Application description:
+
+
+
+This is an agentic application that uses PydanticAI to create a cybersecurity assistant.
+
+Application Design: /References/app_design/application_design.md
+Application Architecture and Workflow: /References/app_design/application_architecture.png
+
+Use the following references as needed for specific code examples, documentation, and conventions:
+
+    - PydanticAI Documentation: https://ai.pydantic.dev/
+    - Pydantic Documentation: /References/Pydantic-Documentation.md
+    - Agentic AI with Pydantic examples: /References/code_examples_and_documentation/agentic_ai_with_pydantic/
+    - Pydantic AI Examples: /References/code_examples_and_documentation/pydantic_ai
+    - Pydantic AI Tutorials: /References/code_examples_and_documentation/pydantic_ai_tutorial/
+
+Specific Requirements:
+
+
