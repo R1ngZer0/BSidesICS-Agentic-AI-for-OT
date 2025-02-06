@@ -11,10 +11,13 @@ Database (if needed): MongoDB
 Vector Database (if needed): Chroma
 
 Application description:
+This is an agentic application that uses PydanticAI to create a cybersecurity assistant. It can parse vulnerability scans and store the details in a database. It can perform Nmap scans and store the results in that same database, correlating the data for matching assets or creating net-new assets. It can accept PCAP files and store the details in the same database, also matching the data to existing assets or creating net-new assets. It has a chat feature that can be used to chat with the user about the data in the database. The application is CLI based, and has a CLI UI/menu for each of the features. The nmap scanning feature should allow several different types of scans, including:
 
-
-
-This is an agentic application that uses PydanticAI to create a cybersecurity assistant.
+    - Basic Nmap Scan
+    - Nmap Scan with Aggressive Host Discovery
+    - Nmap Scan with Aggressive Host Discovery and Service Version Detection
+    - Nmap Scan with Aggressive Host Discovery, Service Version Detection, and OS Detection
+    - Nmap Scan with Aggressive Host Discovery, Service Version Detection, OS Detection, and Vulnerability Scan
 
 Application Design: /References/app_design/application_design.md
 Application Architecture and Workflow: /References/app_design/application_architecture.png
@@ -29,4 +32,4 @@ Use the following references as needed for specific code examples, documentation
 
 Specific Requirements:
 
-
+    - The application should run on Windows, Linux, and MacOS
