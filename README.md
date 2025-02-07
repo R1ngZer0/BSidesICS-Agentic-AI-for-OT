@@ -1,5 +1,17 @@
 # BSidesICS
 
+## Video links
+
+This is the full, unedited version of going through the process of Cursor creating the app based on my design input. It is time-lapse and I provide commentary and explanation of what is going on.
+
+- https://youtu.be/Mf3X6_CeLb8
+
+Regular speed, no commentary:
+
+- https://youtu.be/liFzLzrGEe8
+
+# Project Overview
+
 A comprehensive cybersecurity tool for OT environments that provides vulnerability management, network scanning, traffic analysis, and AI-powered assistance.
 
 ## Features
