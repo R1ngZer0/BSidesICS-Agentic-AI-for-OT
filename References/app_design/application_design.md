@@ -27,6 +27,7 @@ Specific Requirements:
     - Vulnerabiility scans and network scans should be xml files.
     - PCAP files should be pcap files.
     - Knowledgebase documents should be in pdf format.
+    - Knowledgebase documents should be be processed from the /Data/knowledge_base folder.
     - The application should use the following UI:
         - CLI
     - The application should use the following validation framework:
