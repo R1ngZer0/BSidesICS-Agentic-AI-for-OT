@@ -8,6 +8,10 @@ from agents.nmap_agent import NmapScanManager
 from rich.progress import Progress
 from agents.vulnerability_scan_agent import VulnerabilityScanManager
 from agents.pcap_agent import PcapAnalysisManager
+from agents.chat_agent import ChatManager
+from utils.settings_manager import SettingsManager, SettingsUpdate
+from rich.prompt import Prompt, Confirm
+from agents.knowledge_base_agent import KnowledgeBaseManager
 
 app = typer.Typer()
 console = Console()
@@ -22,8 +26,9 @@ def display_main_menu():
     table.add_row("2", "Perform Nmap Scan")
     table.add_row("3", "Process PCAP Files")
     table.add_row("4", "Chat with Assistant")
-    table.add_row("5", "Settings")
-    table.add_row("6", "Exit")
+    table.add_row("5", "Process Knowledge Base")
+    table.add_row("6", "Settings")
+    table.add_row("7", "Exit")
     
     console.print(table)
 
@@ -43,10 +48,12 @@ def main():
         elif choice == "3":
             asyncio.run(process_pcap_files())
         elif choice == "4":
-            chat_with_assistant()
+            asyncio.run(chat_with_assistant())
         elif choice == "5":
-            change_settings()
+            asyncio.run(process_knowledge_base())
         elif choice == "6":
+            change_settings()
+        elif choice == "7":
             typer.echo("Goodbye!")
             break
         else:
@@ -156,13 +163,153 @@ async def process_pcap_files():
         finally:
             progress.update(task, completed=True)
 
-def chat_with_assistant():
-    # TODO: Implement chat functionality
-    pass
+async def chat_with_assistant():
+    """Chat with the cybersecurity assistant"""
+    chat_manager = ChatManager()
+    
+    console.print("\n[cyan]Chat with OT Cybersecurity Assistant[/cyan]")
+    console.print("Type 'exit' to return to main menu\n")
+    
+    while True:
+        query = typer.prompt("You")
+        
+        if query.lower() == 'exit':
+            break
+        
+        with Progress(transient=True) as progress:
+            task = progress.add_task("Thinking...", total=None)
+            
+            try:
+                result = await chat_manager.process_query(query)
+                
+                # Display response
+                console.print(f"\n[green]Assistant:[/green] {result['response']}\n")
+                
+                # Display suggested follow-ups if any
+                if result["suggested_followups"]:
+                    console.print("[cyan]Suggested follow-up questions:[/cyan]")
+                    for i, question in enumerate(result["suggested_followups"], 1):
+                        console.print(f"{i}. {question}")
+                    console.print()
+                
+            except Exception as e:
+                console.print(f"\n[red]Error: {str(e)}[/red]\n")
+            
+            finally:
+                progress.update(task, completed=True)
+
+async def process_knowledge_base():
+    """Process knowledge base documents"""
+    kb_manager = KnowledgeBaseManager()
+    
+    with Progress() as progress:
+        task = progress.add_task("[cyan]Processing knowledge base documents...", total=None)
+        
+        try:
+            results = await kb_manager.process_documents()
+            
+            console.print("\n[green]Knowledge base processing completed![/green]")
+            console.print(f"Processed {results['processed_documents']} documents")
+            
+        except Exception as e:
+            console.print(f"\n[red]Error processing knowledge base: {str(e)}[/red]")
+        
+        finally:
+            progress.update(task, completed=True)
 
 def change_settings():
-    # TODO: Implement settings management
-    pass
+    """Manage application settings"""
+    settings_manager = SettingsManager()
+    
+    while True:
+        console.print("\n[cyan]Settings Management[/cyan]")
+        
+        # Display current settings
+        table = Table(title="Current Settings")
+        table.add_column("Setting", style="cyan")
+        table.add_column("Value", style="green")
+        
+        current_settings = settings_manager.get_current_settings()
+        for key, value in current_settings.items():
+            table.add_row(key, str(value))
+        
+        console.print(table)
+        
+        # Display settings menu
+        settings_menu = Table(title="Settings Menu")
+        settings_menu.add_column("Option", style="cyan")
+        settings_menu.add_column("Description", style="green")
+        
+        settings_menu.add_row("1", "Change Application Mode")
+        settings_menu.add_row("2", "Update OpenAI API Key")
+        settings_menu.add_row("3", "Update MongoDB Settings")
+        settings_menu.add_row("4", "Update Chroma Settings")
+        settings_menu.add_row("5", "Validate Settings")
+        settings_menu.add_row("6", "Return to Main Menu")
+        
+        console.print(settings_menu)
+        
+        choice = Prompt.ask("Select an option", choices=["1", "2", "3", "4", "5", "6"])
+        
+        if choice == "1":
+            app_mode = Prompt.ask(
+                "Select application mode",
+                choices=["cloud", "local"],
+                default=current_settings.get('APP_MODE', 'cloud')
+            )
+            settings_manager.update_settings(SettingsUpdate(app_mode=app_mode))
+            
+        elif choice == "2":
+            api_key = Prompt.ask("Enter OpenAI API key")
+            if Confirm.ask("Are you sure you want to update the API key?"):
+                settings_manager.update_settings(SettingsUpdate(openai_api_key=api_key))
+            
+        elif choice == "3":
+            uri = Prompt.ask(
+                "Enter MongoDB URI",
+                default=current_settings.get('MONGODB_URI', 'mongodb://localhost:27017')
+            )
+            db_name = Prompt.ask(
+                "Enter database name",
+                default=current_settings.get('MONGODB_DB_NAME', 'ot_cybersecurity')
+            )
+            settings_manager.update_settings(SettingsUpdate(
+                mongodb_uri=uri,
+                mongodb_db_name=db_name
+            ))
+            
+        elif choice == "4":
+            chroma_dir = Prompt.ask(
+                "Enter Chroma persistence directory",
+                default=current_settings.get('CHROMA_PERSIST_DIRECTORY', './Data/chroma_db')
+            )
+            settings_manager.update_settings(SettingsUpdate(
+                chroma_persist_directory=chroma_dir
+            ))
+            
+        elif choice == "5":
+            validation = settings_manager.validate_settings()
+            
+            validation_table = Table(title="Settings Validation")
+            validation_table.add_column("Setting", style="cyan")
+            validation_table.add_column("Status", style="green")
+            
+            for setting, is_valid in validation.items():
+                validation_table.add_row(
+                    setting,
+                    "[green]Valid[/green]" if is_valid else "[red]Invalid[/red]"
+                )
+            
+            console.print(validation_table)
+            
+            if not all(validation.values()):
+                console.print("\n[yellow]Warning: Some settings are invalid or missing![/yellow]")
+            
+            if Prompt.ask("Press Enter to continue..."):
+                continue
+            
+        elif choice == "6":
+            break
 
 if __name__ == "__main__":
     app() 

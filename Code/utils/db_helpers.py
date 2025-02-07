@@ -3,6 +3,7 @@ from config import get_settings
 from models.base_models import Asset, VulnerabilityRecord, NetworkScan, PcapRecord
 import chromadb
 from typing import Any, Dict, List
+from utils.embedding_manager import EmbeddingManager
 
 settings = get_settings()
 
@@ -27,13 +28,26 @@ class DatabaseManager:
         result = await self.db.assets.find_one({"_id": asset_id})
         return Asset(**result) if result else None
 
-    def store_vector_embedding(self, collection_name: str, text: str, metadata: Dict[str, Any], embedding: List[float]):
+    async def store_vector_embedding(
+        self,
+        collection_name: str,
+        text: str,
+        metadata: Dict[str, Any],
+        embedding: List[float] = None
+    ):
+        """Store text and its embedding in the vector database"""
         collection = self.chroma_client.get_or_create_collection(collection_name)
+        
+        if embedding is None:
+            # Get embedding if not provided
+            embedding_manager = EmbeddingManager()
+            embedding = await embedding_manager.get_embedding(text)
+        
         collection.add(
             embeddings=[embedding],
             documents=[text],
             metadatas=[metadata]
-        ) 
+        )
 
     async def insert_vulnerability(self, vulnerability: VulnerabilityRecord) -> str:
         """Insert a vulnerability record into MongoDB"""
@@ -60,3 +74,36 @@ class DatabaseManager:
         async for doc in cursor:
             records.append(PcapRecord(**doc))
         return records 
+
+    async def search_vector_database(
+        self,
+        collection_name: str,
+        query_text: str,
+        filter_params: Dict = None,
+        limit: int = 5
+    ) -> List[Dict]:
+        """Search the vector database"""
+        collection = self.chroma_client.get_or_create_collection(collection_name)
+        
+        # Get embedding for query
+        embedding_manager = EmbeddingManager()
+        embedding = await embedding_manager.get_embedding(query_text)
+        
+        results = collection.query(
+            query_embeddings=[embedding],
+            n_results=limit,
+            where=filter_params
+        )
+        
+        return [
+            {
+                "document": doc,
+                "metadata": meta,
+                "distance": dist
+            }
+            for doc, meta, dist in zip(
+                results['documents'][0],
+                results['metadatas'][0],
+                results['distances'][0]
+            )
+        ] 
